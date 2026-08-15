@@ -6,10 +6,11 @@ import { ShoppingBag, Phone, MapPin, Gift, List } from "@phosphor-icons/react";
 interface NavbarProps {
   shopName?: string;
   cartCount?: number;
+  logoUrl?: string | null;
   onCartClick?: () => void;
 }
 
-export default function Navbar({ shopName = "LuminaGifts", cartCount = 0, onCartClick }: NavbarProps) {
+export default function Navbar({ shopName = "LuminaGifts", cartCount = 0, logoUrl = null, onCartClick }: NavbarProps) {
   const handleCartClick = (e: React.MouseEvent) => {
     if (onCartClick) {
       e.preventDefault();
@@ -43,9 +44,13 @@ export default function Navbar({ shopName = "LuminaGifts", cartCount = 0, onCart
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="font-serif font-bold text-xl tracking-tight text-foreground hover:opacity-85 transition-opacity flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <Gift size={16} weight="fill" />
-            </span>
+            {logoUrl ? (
+              <img src={logoUrl} alt={shopName} className="h-8 object-contain" />
+            ) : (
+              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Gift size={16} weight="fill" />
+              </span>
+            )}
             {shopName}
           </Link>
 

@@ -423,9 +423,13 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="font-serif font-bold text-2xl tracking-tight text-foreground hover:opacity-85 transition-opacity flex-shrink-0 flex items-center gap-2">
-            <span className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <Gift size={20} weight="fill" />
-            </span>
+            {tenant.logoUrl ? (
+              <img src={tenant.logoUrl} alt={tenant.shopName} className="h-9 object-contain" />
+            ) : (
+              <span className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Gift size={20} weight="fill" />
+              </span>
+            )}
             {tenant.shopName}
           </Link>
 

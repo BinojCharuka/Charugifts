@@ -85,7 +85,7 @@ export default function TrackOrderClient({ tenant }: TrackOrderClientProps) {
         />
       </div>
 
-      <Navbar shopName={tenant.shopName} />
+      <Navbar shopName={tenant.shopName} logoUrl={tenant.logoUrl} />
 
       <main className="max-w-2xl mx-auto px-6 py-20 relative z-10">
         <div className="text-center mb-12">

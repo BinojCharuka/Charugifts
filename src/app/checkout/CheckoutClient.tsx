@@ -220,7 +220,7 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
   if (cartEmpty) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar shopName={tenant.shopName} />
+        <Navbar shopName={tenant.shopName} logoUrl={tenant.logoUrl} />
         <main className="max-w-md mx-auto px-6 py-24 text-center space-y-6">
           <ShoppingBag size={48} className="mx-auto text-muted-foreground" />
           <h1 className="text-2xl font-bold text-foreground">Your cart is empty</h1>
@@ -349,7 +349,7 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
         />
       </div>
 
-      <Navbar shopName={tenant.shopName} />
+      <Navbar shopName={tenant.shopName} logoUrl={tenant.logoUrl} />
 
       <main className="max-w-5xl mx-auto px-6 py-16 relative z-10">
         {/* Breadcrumb */}

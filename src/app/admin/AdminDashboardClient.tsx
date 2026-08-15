@@ -211,7 +211,40 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
     branch: data.tenant.bankDetails.branch,
     accountName: data.tenant.bankDetails.accountName,
     accountNumber: data.tenant.bankDetails.accountNumber,
+    logoUrl: data.tenant.logoUrl || "",
   });
+
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setSettingsForm((prev) => ({ ...prev, logoUrl: data.url }));
+        showToast("Logo uploaded successfully!");
+      } else {
+        showToast(data.error || "Failed to upload logo.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred while uploading logo.", "error");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const defaultSlides = [
     {
@@ -387,6 +420,7 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
         accountName: settingsForm.accountName,
         accountNumber: settingsForm.accountNumber,
       },
+      logoUrl: settingsForm.logoUrl,
     });
 
     if (res.success) {
@@ -396,6 +430,7 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
           ...data.tenant,
           shopName: settingsForm.shopName,
           domainPrefix: settingsForm.domainPrefix,
+          logoUrl: settingsForm.logoUrl,
           bankDetails: {
             bankName: settingsForm.bankName,
             branch: settingsForm.branch,
@@ -1336,27 +1371,61 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
                 <Card className="border-border bg-card text-foreground">
                   <CardContent className="p-6 space-y-5">
                     <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Store Identity</h3>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Shop Name</label>
-                      <Input
-                        value={settingsForm.shopName}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, shopName: e.target.value })}
-                        required
-                        className="h-11 border-border bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Shop URL Prefix</label>
-                      <div className="flex items-center gap-0">
-                        <span className="h-11 px-3 flex items-center text-sm text-muted-foreground bg-muted border border-r-0 border-border rounded-l-lg">
-                          luminagifts.com/
-                        </span>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Store Logo</label>
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {settingsForm.logoUrl ? (
+                              <img src={settingsForm.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                            ) : (
+                              <Storefront size={24} className="text-muted-foreground opacity-50" />
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              ref={logoInputRef}
+                              onChange={handleLogoUpload}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => logoInputRef.current?.click()}
+                              disabled={uploadingLogo}
+                            >
+                              {uploadingLogo ? "Uploading..." : "Change Logo"}
+                            </Button>
+                            <p className="text-[10px] text-muted-foreground">Recommended: Square PNG/JPG, transparent background.</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Shop Name</label>
                         <Input
-                          value={settingsForm.domainPrefix}
-                          onChange={(e) => setSettingsForm({ ...settingsForm, domainPrefix: e.target.value })}
+                          value={settingsForm.shopName}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, shopName: e.target.value })}
                           required
-                          className="h-11 rounded-l-none border-border bg-background"
+                          className="h-11 border-border bg-background"
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Shop URL Prefix</label>
+                        <div className="flex items-center gap-0">
+                          <span className="h-11 px-3 flex items-center text-sm text-muted-foreground bg-muted border border-r-0 border-border rounded-l-lg">
+                            luminagifts.com/
+                          </span>
+                          <Input
+                            value={settingsForm.domainPrefix}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, domainPrefix: e.target.value })}
+                            required
+                            className="h-11 rounded-l-none border-border bg-background"
+                          />
+                        </div>
                       </div>
                     </div>
                   </CardContent>
