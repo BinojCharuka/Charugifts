@@ -28,6 +28,7 @@ interface Tenant {
     accountNumber: string;
     branch: string;
   };
+  logoUrl?: string | null;
 }
 
 interface CartItem {

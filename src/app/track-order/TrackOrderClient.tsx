@@ -13,6 +13,7 @@ import { lookupOrder } from "./actions";
 interface TrackOrderClientProps {
   tenant: {
     shopName: string;
+    logoUrl?: string | null;
   };
 }
 
