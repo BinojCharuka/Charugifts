@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,7 +54,12 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Password</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground">Password</label>
+                  <Link href="/admin/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input
                   type="password"
                   name="password"

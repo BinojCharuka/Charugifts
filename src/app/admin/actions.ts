@@ -6,6 +6,9 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { getSession, setSession, clearSession } from "@/lib/session";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function hashPassword(password: string): string {
   return crypto.createHash("sha256").update(password).digest("hex");
@@ -163,6 +166,86 @@ export async function updateAdminCredentials(data: { email: string; currentPassw
   } catch (error) {
     console.error("Failed to update admin credentials:", error);
     return { error: "Failed to update credentials" };
+  }
+}
+
+export async function sendPasswordResetEmail(email: string, origin: string) {
+  try {
+    const sellerRecord = await db.query.sellers.findFirst({
+      where: eq(sellers.email, email.toLowerCase().trim()),
+    });
+
+    if (!sellerRecord) {
+      // Don't leak if the email exists or not, just return success
+      return { success: true };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 1); // 1 hour expiry
+
+    await db
+      .update(sellers)
+      .set({
+        resetToken,
+        resetTokenExpiry: expiry,
+      })
+      .where(eq(sellers.id, sellerRecord.id));
+
+    const resetUrl = `${origin}/admin/reset-password?token=${resetToken}`;
+
+    await resend.emails.send({
+      from: "Lumina Gifts <onboarding@resend.dev>",
+      to: email,
+      subject: "Password Reset Request",
+      html: `
+        <p>You requested a password reset for your admin account.</p>
+        <p>Click the link below to reset your password. This link is valid for 1 hour.</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>If you did not request this, you can safely ignore this email.</p>
+      `,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send reset email:", error);
+    return { error: "Failed to send reset email. Please try again." };
+  }
+}
+
+export async function resetPassword(prevState: any, formData: FormData) {
+  const token = formData.get("token") as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!token) return { error: "Invalid or missing token." };
+  if (!password || password.length < 6) return { error: "Password must be at least 6 characters long." };
+  if (password !== confirmPassword) return { error: "Passwords do not match." };
+
+  try {
+    const sellerRecord = await db.query.sellers.findFirst({
+      where: eq(sellers.resetToken, token),
+    });
+
+    if (!sellerRecord || !sellerRecord.resetTokenExpiry || sellerRecord.resetTokenExpiry < new Date()) {
+      return { error: "Token is invalid or has expired." };
+    }
+
+    const hashed = hashPassword(password);
+
+    await db
+      .update(sellers)
+      .set({
+        passwordHash: hashed,
+        resetToken: null,
+        resetTokenExpiry: null,
+      })
+      .where(eq(sellers.id, sellerRecord.id));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to reset password:", error);
+    return { error: "An unexpected error occurred. Please try again." };
   }
 }
 
