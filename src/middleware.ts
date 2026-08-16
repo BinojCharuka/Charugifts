@@ -6,7 +6,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only protect admin routes
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+  if (
+    pathname.startsWith("/admin") &&
+    !pathname.startsWith("/admin/login") &&
+    !pathname.startsWith("/admin/forgot-password") &&
+    !pathname.startsWith("/admin/reset-password")
+  ) {
     const accessToken = request.cookies.get("lumina_access_token")?.value;
     const refreshToken = request.cookies.get("lumina_refresh_token")?.value;
 
