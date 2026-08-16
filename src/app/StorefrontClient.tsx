@@ -408,10 +408,6 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               <Link href="/track-order" className="hover:text-amber-400 transition-colors font-medium">
                 Track Order
               </Link>
-              <span className="text-[#3F3B38]">•</span>
-              <Link href="/admin/login" className="hover:text-amber-400 transition-colors font-medium">
-                Seller Admin
-              </Link>
             </div>
           </div>
         </div>
@@ -1135,10 +1131,6 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#78716C] font-semibold">
           <span>&copy; 2026 {tenant.shopName} Lanka. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <Link href="/admin/login" className="hover:text-amber-400 transition-colors">
-              Store Owner Log In
-            </Link>
-            <span>•</span>
             <span className="text-[#3F3B38]">
               Designed by <a href="https://charudesignstudio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Charu Design studio</a>
             </span>

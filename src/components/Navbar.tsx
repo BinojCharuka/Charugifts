@@ -62,9 +62,6 @@ export default function Navbar({ shopName = "LuminaGifts", cartCount = 0, logoUr
             <Link href="/track-order" className="hover:text-primary transition-colors">
               Track Order
             </Link>
-            <Link href="/admin/login" className="hover:text-primary transition-colors">
-              Seller Admin
-            </Link>
           </div>
 
           {/* Cart Bag */}
