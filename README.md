@@ -1,123 +1,88 @@
-# LuminaGifts SaaS: Single-Vendor E-Commerce Platform
+# Lumina Gifts - E-Commerce Platform 🎁
 
-A streamlined, multi-tenant SaaS platform allowing independent sellers to easily create and manage their own isolated storefronts for personalized gifts (teddy bears, gift boxes, etc.). 
-
-Authored by: Binoj Charuka
-
-## 🎨 UI/UX Design Guidelines: Minimalist Approach
-
-The UI is designed using Figma with a focus on a basic, minimal color palette. This allows the seller's colorful products (like teddy bears and gift boxes) to stand out without competing with the interface.
-
-### Color Palette
-*   **Primary Background:** `#FAFAFA` (Off-white) - Clean, distraction-free canvas.
-*   **Surface Background:** `#FFFFFF` (Pure White) - For cards, checkout panels, and forms.
-*   **Primary Text:** `#1A1A1A` (Charcoal Black) - High contrast for readability.
-*   **Secondary Text:** `#737373` (Muted Gray) - For subtitles, placeholders, and subtle info.
-*   **Accent Color:** `#2563EB` (Soft Royal Blue) - Used sparingly for primary actions (e.g., "Add to Cart", "Accept Payment").
-*   **Borders & Dividers:** `#E5E5E5` (Light Gray) - To separate sections subtly.
-*   **Status Indicators:**
-    *   *Success/Verified:* `#10B981` (Muted Green)
-    *   *Pending/Warning:* `#F59E0B` (Muted Yellow)
-    *   *Error/Rejected:* `#EF4444` (Muted Red)
-
-### Typography
-*   **Font Family:** Inter or Roboto (Clean, sans-serif).
-*   **Styling:** Bold for headings, regular for body. Lots of whitespace between elements.
-
----
+Welcome to the **Lumina Gifts** repository. This is a modern, high-performance, and beautifully animated e-commerce platform built specifically for gifting services. It features a complete customer-facing storefront and a powerful, SaaS-ready admin dashboard for managing inventory, orders, and site content.
 
 ## 🚀 Tech Stack
 
-*   **Frontend:** React.js / Next.js (Storefront & Seller Dashboard)
-*   **Backend:** Node.js with Express.js
-*   **Database:** Neon (Serverless PostgreSQL)
-*   **Storage:** Cloudinary (For product images and bank slip uploads)
-*   **Design & Prototyping:** Figma
+This project is built using cutting-edge web technologies to ensure a fast, scalable, and delightful user experience:
 
----
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+- **Language:** TypeScript
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) & custom CSS
+- **Animations:** [Framer Motion](https://www.framer.com/motion/)
+- **Database:** PostgreSQL (hosted on [Neon](https://neon.tech/))
+- **ORM:** [Drizzle ORM](https://orm.drizzle.team/)
+- **Image Hosting:** [Cloudinary](https://cloudinary.com/)
+- **Email Service:** [Resend](https://resend.com/) (for password resets and notifications)
+- **Icons:** Phosphor Icons & Lucide React
 
 ## ✨ Key Features
 
-### 🛒 Customer Storefront (Isolated per Seller)
-*   **Exclusive Browsing:** Customers only see products belonging to the specific seller (`shop_id`). No cross-selling with other vendors.
-*   **Customization Options:** Ability to select variations (size, color) and add a custom personalized note before adding to the cart.
-*   **Manual Checkout (Bank Deposit):** 
-    *   Customer inputs shipping details.
-    *   System displays the specific seller's bank account details.
-    *   Customer uploads the bank transfer receipt/slip (saved to Cloudinary).
-*   **Guest Order Tracking:** Customers can track their order status using their **Order ID** and **Phone Number** without needing to register for an account.
+### 🛍️ Storefront (Customer Facing)
+- **Dynamic Catalog:** Browse products with instant search, category filtering, and price sorting.
+- **Interactive Gift Quiz:** A personalized quiz that recommends the perfect gift based on the recipient, occasion, and "vibe".
+- **Gift Box Experience:** Unique "Gift Box" products that allow customers to click "What's inside?" to view a beautifully animated popup of all individual items included in the box.
+- **Sliding Cart:** A smooth, slide-out cart drawer for easy review of selected items before checkout.
+- **Order Tracking:** Customers can track the status of their orders directly from the site.
+- **Responsive & Animated:** Fully mobile-optimized with micro-interactions and smooth page transitions using Framer Motion.
 
-### 💼 Seller Admin Panel (Dashboard)
-*   **Store Customization:** Sellers can upload their logo, update shop name, and set their bank account details.
-*   **Inventory Management:** 
-    *   Add, edit, and remove products.
-    *   Simple Stock Management: Toggle items as "In Stock" or "Out of Stock".
-*   **Order & Payment Management:**
-    *   View new orders with the attached custom note.
-    *   View uploaded bank receipts to verify payments.
-    *   Update order statuses manually (`Pending` -> `Payment Verified` -> `Processing` -> `Shipped`).
+### ⚙️ Admin Dashboard (Management)
+- **SaaS Architecture:** Built with a multi-tenant foundation (`tenantId`), allowing for scalable multi-store capabilities in the future.
+- **Product Management:** 
+  - Create, edit, and delete products.
+  - One-click stock toggling (In Stock / Out of Stock).
+  - **Advanced Gift Boxes:** Admins can flag a product as a "Gift Box" and dynamically add an unlimited number of sub-items, uploading specific images for each sub-item directly from the dashboard.
+- **Image Uploads:** Seamless integration with Cloudinary for uploading product images, logos, and sub-item images.
+- **Order Management:** View incoming orders, track customer details, and update payment/delivery statuses (Pending, Processing, Shipped, Delivered).
+- **Promo Codes:** Create discount codes, set usage limits, and track how many times they have been used.
+- **Content Management System (CMS):** Update the storefront's appearance without touching code:
+  - Modify Hero text, badges, and background images.
+  - Update Contact information, WhatsApp numbers, and footer text.
+  - Manage bank account details for direct transfers.
+- **Secure Authentication:** Secure seller login, session management, and a password reset flow powered by Resend emails.
 
----
+## 📦 Database Schema Overview
 
-## 🗄️ Database Schema (Neon Postgres)
+The database is powered by Drizzle ORM and PostgreSQL. Core tables include:
 
-### 1. `Tenant` (Shops)
-*   `id` (PK, UUID)
-*   `shop_name` (String)
-*   `domain_prefix` (String, Unique)
-*   `bank_details` (JSON)
-*   `logo_url` (String)
+- **`tenants`**: Stores shop settings, CMS content, bank details, and branding (SaaS ready).
+- **`sellers`**: Admin accounts linked to a tenant, securely storing password hashes and reset tokens.
+- **`products`**: Stores inventory data, pricing, stock levels, and the new `isGiftBox` and `boxItems` JSONB structure for complex products.
+- **`orders` & `order_items`**: Tracks customer purchases, shipping details, applied discounts, and snapshots of product prices at the time of purchase.
+- **`promo_codes`**: Manages active discount codes and their usage limits.
 
-### 2. `Product`
-*   `id` (PK, UUID)
-*   `tenant_id` (FK -> Tenant.id)
-*   `name` (String)
-*   `description` (Text)
-*   `price` (Decimal)
-*   `in_stock` (Boolean)
-*   `image_url` (String)
+## 🛠️ Getting Started Locally
 
-### 3. `Order`
-*   `id` (PK, UUID) - Custom formatted like `#ORD-1234`
-*   `tenant_id` (FK -> Tenant.id)
-*   `customer_name` (String)
-*   `customer_phone` (String)
-*   `shipping_address` (Text)
-*   `custom_note` (Text)
-*   `total_amount` (Decimal)
-*   `receipt_url` (String) - Cloudinary URL of the uploaded slip
-*   `payment_status` (Enum: PENDING, VERIFIED, REJECTED)
-*   `order_status` (Enum: PENDING, PROCESSING, SHIPPED, DELIVERED)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/BinojCharuka/Charugifts.git
+   cd lumina-gifts
+   ```
 
----
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## 🛠️ Setup Instructions
+3. **Environment Variables:**
+   Create a `.env` or `.env.local` file in the root directory and configure the following required variables:
+   - Database Connection String (Neon)
+   - Cloudinary API Keys (for image uploads)
+   - Resend API Key (for emails)
+   - Authentication Secrets
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone <repository_url>
-    cd lumina-gifts
-    ```
+4. **Run Database Migrations (if schema is updated):**
+   ```bash
+   npx drizzle-kit push
+   ```
 
-2.  **Install Dependencies:**
-    ```bash
-    npm install
-    ```
+5. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:3000`.
 
-3.  **Environment Variables:**
-    Create a `.env` file in the root directory and add the following:
-    ```env
-    DATABASE_URL="postgres://<user>:<password>@<host>/<dbname>?sslmode=require" # Neon DB URL
-    CLOUDINARY_URL="cloudinary://<api_key>:<api_secret>@<cloud_name>"
-    PORT=5000
-    ```
+## 🚢 Deployment
 
-4.  **Run Migrations:**
-    ```bash
-    npx prisma db push
-    ```
-
-5.  **Start the Development Server:**
-    ```bash
-    npm run dev
-    ```
+This project is optimized for deployment on **Vercel**. 
+Simply connect your GitHub repository to Vercel, ensure all your environment variables from `.env` are added to the Vercel project settings, and Vercel will automatically build and deploy the application on every push to the `main` branch.
