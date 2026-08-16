@@ -1139,7 +1139,9 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               Store Owner Log In
             </Link>
             <span>•</span>
-            <span className="text-[#3F3B38]">Design inspired by luxury retail formats</span>
+            <span className="text-[#3F3B38]">
+              Designed by <a href="https://charudesignstudio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Charu Design studio</a>
+            </span>
           </div>
         </div>
       </footer>
