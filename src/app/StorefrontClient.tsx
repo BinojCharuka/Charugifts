@@ -22,7 +22,8 @@ import {
   Phone,
   EnvelopeSimple,
   ArrowsCounterClockwise,
-  MapPin
+  MapPin,
+  Package
 } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,6 +36,8 @@ interface Product {
   inStock: boolean;
   stockCount: number;
   imageUrl: string | null;
+  isGiftBox?: boolean;
+  boxItems?: Array<{ name: string; imageUrl: string | null }> | null;
 }
 
 interface ContentSettings {
@@ -102,6 +105,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
   const [cart, setCart] = useState<{ product: Product; qty: number; note: string }[]>([]);
   const [isCartLoaded, setIsCartLoaded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [viewingBoxContents, setViewingBoxContents] = useState<Product | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -1016,6 +1020,19 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
                                 {product.description}
                               </p>
                             )}
+                            
+                            {/* Gift Box Contents Button */}
+                            {product.isGiftBox && product.boxItems && product.boxItems.length > 0 && (
+                              <div className="pt-2">
+                                <button
+                                  onClick={() => setViewingBoxContents(product)}
+                                  className="text-[11px] font-bold text-primary hover:text-primary-foreground border border-primary hover:bg-primary px-3 py-1 rounded-full transition cursor-pointer flex items-center gap-1 w-full justify-center"
+                                >
+                                  <Package size={12} />
+                                  What&apos;s inside?
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Price & Action Button (persistent/list style) */}
@@ -1409,6 +1426,74 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Gift Box Contents Modal */}
+      <AnimatePresence>
+        {viewingBoxContents && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewingBoxContents(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] cursor-pointer"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-lg bg-card rounded-3xl border border-border shadow-2xl z-[60] flex flex-col max-h-[85vh] overflow-hidden"
+            >
+              <div className="px-6 py-5 border-b border-border flex items-center justify-between text-foreground bg-card/80 backdrop-blur-md sticky top-0 z-10">
+                <div>
+                  <h3 className="font-serif font-bold text-xl">
+                    Inside {viewingBoxContents.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">
+                    A collection of {viewingBoxContents.boxItems?.length} curated items
+                  </p>
+                </div>
+                <button
+                  onClick={() => setViewingBoxContents(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto space-y-4">
+                {viewingBoxContents.boxItems?.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl border border-border bg-muted/20 hover:border-primary/40 transition-colors group">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted relative flex-shrink-0 border border-border shadow-sm">
+                      {item.imageUrl ? (
+                        <Image src={item.imageUrl} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground font-bold">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-foreground text-sm">{item.name}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-6 border-t border-border bg-muted/30">
+                <Button
+                  onClick={() => {
+                    handleAddToCart(viewingBoxContents);
+                    setViewingBoxContents(null);
+                  }}
+                  disabled={!viewingBoxContents.inStock || viewingBoxContents.stockCount <= 0}
+                  className="w-full rounded-full font-bold h-12 text-sm shadow-md bg-primary hover:bg-primary/95 text-white"
+                >
+                  Add Box to Cart - Rs. {parseFloat(viewingBoxContents.price).toLocaleString()}
+                </Button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

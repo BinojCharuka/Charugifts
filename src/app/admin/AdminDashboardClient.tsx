@@ -79,6 +79,8 @@ interface ProductData {
   inStock: boolean;
   stockCount: number;
   imageUrl: string | null;
+  isGiftBox: boolean;
+  boxItems: Array<{ name: string; imageUrl: string | null }> | null;
 }
 
 interface OrderData {
@@ -155,15 +157,27 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductData | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [productForm, setProductForm] = useState({
+  const [productForm, setProductForm] = useState<{
+    name: string;
+    price: string;
+    description: string;
+    imageUrl: string;
+    inStock: boolean;
+    stockCount: string;
+    isGiftBox: boolean;
+    boxItems: Array<{ name: string; imageUrl: string | null }>;
+  }>({
     name: "",
     price: "",
     description: "",
     imageUrl: "",
     inStock: true,
     stockCount: "0",
+    isGiftBox: false,
+    boxItems: [],
   });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingBoxItemIdx, setUploadingBoxItemIdx] = useState<number | null>(null);
   const productImageInputRef = useRef<HTMLInputElement>(null);
 
   // Promo modal state
@@ -208,6 +222,39 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       alert("An error occurred while uploading product image.");
     } finally {
       setUploadingImage(false);
+      if (productImageInputRef.current) productImageInputRef.current.value = "";
+    }
+  };
+
+  const handleBoxItemImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBoxItemIdx(index);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setProductForm((prev) => {
+          const newBoxItems = [...prev.boxItems];
+          newBoxItems[index] = { ...newBoxItems[index], imageUrl: data.url };
+          return { ...prev, boxItems: newBoxItems };
+        });
+      } else {
+        alert(data.error || "Failed to upload box item image.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while uploading box item image.");
+    } finally {
+      setUploadingBoxItemIdx(null);
     }
   };
 
@@ -485,6 +532,8 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       imageUrl: "",
       inStock: true,
       stockCount: "0",
+      isGiftBox: false,
+      boxItems: [],
     });
     setIsProductModalOpen(true);
   };
@@ -498,6 +547,8 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       imageUrl: p.imageUrl || "",
       inStock: p.inStock,
       stockCount: String(p.stockCount || 0),
+      isGiftBox: p.isGiftBox || false,
+      boxItems: p.boxItems || [],
     });
     setIsProductModalOpen(true);
   };
@@ -516,6 +567,8 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       imageUrl: productForm.imageUrl,
       inStock: productForm.inStock,
       stockCount: parseInt(productForm.stockCount) || 0,
+      isGiftBox: productForm.isGiftBox,
+      boxItems: productForm.boxItems,
     });
     if (res.success) {
       setIsProductModalOpen(false);
@@ -1696,6 +1749,107 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
                     </div>
                   </div>
                 </div>
+
+                {/* Gift Box Settings */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="isGiftBox"
+                      checked={productForm.isGiftBox}
+                      onChange={(e) => setProductForm({ ...productForm, isGiftBox: e.target.checked })}
+                      className="w-4 h-4 rounded border-border text-primary accent-primary"
+                    />
+                    <label htmlFor="isGiftBox" className="text-sm font-medium cursor-pointer">
+                      Is this a Gift Box? (Contains multiple items)
+                    </label>
+                  </div>
+
+                  {productForm.isGiftBox && (
+                    <div className="space-y-3 bg-muted/30 p-4 rounded-xl border border-border">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold">Box Items</label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setProductForm((prev) => ({
+                              ...prev,
+                              boxItems: [...prev.boxItems, { name: "", imageUrl: null }],
+                            }))
+                          }
+                          className="h-8 text-xs rounded-full"
+                        >
+                          + Add Item
+                        </Button>
+                      </div>
+
+                      {productForm.boxItems.length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-4">
+                          No items added yet. Click "+ Add Item" to start.
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {productForm.boxItems.map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-3 bg-background p-3 rounded-lg border border-border">
+                              <div className="w-12 h-12 rounded border border-border bg-muted flex items-center justify-center relative overflow-hidden flex-shrink-0">
+                                {item.imageUrl ? (
+                                  <Image src={item.imageUrl} alt="item" fill className="object-cover" />
+                                ) : (
+                                  <span className="text-[8px] text-muted-foreground text-center leading-tight">No Img</span>
+                                )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <Input
+                                  value={item.name}
+                                  onChange={(e) => {
+                                    const newItems = [...productForm.boxItems];
+                                    newItems[idx].name = e.target.value;
+                                    setProductForm({ ...productForm, boxItems: newItems });
+                                  }}
+                                  placeholder="Item Name (e.g., Chocolate Bar)"
+                                  className="h-8 text-xs"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const input = document.createElement("input");
+                                      input.type = "file";
+                                      input.accept = "image/*";
+                                      input.onchange = (e) => handleBoxItemImageUpload(idx, e as unknown as React.ChangeEvent<HTMLInputElement>);
+                                      input.click();
+                                    }}
+                                    disabled={uploadingBoxItemIdx === idx}
+                                    className="h-7 text-[10px] px-2 rounded"
+                                  >
+                                    {uploadingBoxItemIdx === idx ? "Uploading..." : "Upload Image"}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newItems = productForm.boxItems.filter((_, i) => i !== idx);
+                                      setProductForm({ ...productForm, boxItems: newItems });
+                                    }}
+                                    className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 ml-auto"
+                                  >
+                                    <XCircle size={16} />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="pt-4 border-t border-border flex justify-end gap-3">
                   <Button
                     type="button"

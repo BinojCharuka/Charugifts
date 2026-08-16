@@ -63,6 +63,8 @@ export const products = pgTable("products", {
   inStock: boolean("in_stock").default(true).notNull(),
   stockCount: integer("stock_count").default(0).notNull(),
   imageUrl: varchar("image_url", { length: 2083 }),
+  isGiftBox: boolean("is_gift_box").default(false).notNull(),
+  boxItems: jsonb("box_items").$type<Array<{name: string, imageUrl: string | null}>>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

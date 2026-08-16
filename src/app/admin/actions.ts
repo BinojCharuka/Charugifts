@@ -375,6 +375,8 @@ export async function upsertProduct(
     inStock: boolean;
     stockCount: number;
     imageUrl?: string;
+    isGiftBox?: boolean;
+    boxItems?: Array<{ name: string; imageUrl: string | null }>;
   }
 ) {
   const session = await getSession();
@@ -392,6 +394,8 @@ export async function upsertProduct(
           inStock: data.inStock,
           stockCount: data.stockCount,
           imageUrl: data.imageUrl || null,
+          isGiftBox: data.isGiftBox || false,
+          boxItems: data.boxItems || null,
           updatedAt: new Date(),
         })
         .where(and(eq(products.id, productId), eq(products.tenantId, session.tenantId)));
@@ -405,6 +409,8 @@ export async function upsertProduct(
         inStock: data.inStock,
         stockCount: data.stockCount,
         imageUrl: data.imageUrl || null,
+        isGiftBox: data.isGiftBox || false,
+        boxItems: data.boxItems || null,
       });
     }
 
