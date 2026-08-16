@@ -22,7 +22,8 @@ import {
   toggleProductStock,
   upsertPromoCode,
   deletePromoCode,
-  sellerLogout
+  sellerLogout,
+  updateAdminCredentials
 } from "./actions";
 
 type AdminTab = "overview" | "orders" | "inventory" | "promotions" | "settings" | "content";
@@ -115,6 +116,7 @@ interface DashboardClientProps {
       shipped: string;
       delivered: string;
     };
+    adminEmail: string;
   };
 }
 
@@ -173,6 +175,12 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
     discountAmount: "0",
     usageLimit: "100",
     isActive: true,
+  });
+
+  const [adminCredentialsForm, setAdminCredentialsForm] = useState({
+    email: initialData.adminEmail || "",
+    currentPassword: "",
+    newPassword: "",
   });
 
   const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -442,6 +450,29 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       showToast("Store settings updated successfully!");
     } else {
       showToast(res.error || "Failed to update settings", "error");
+    }
+  };
+
+  const handleSaveAdminCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminCredentialsForm.newPassword && !adminCredentialsForm.currentPassword) {
+      showToast("Current password is required to set a new password", "error");
+      return;
+    }
+    const res = await updateAdminCredentials({
+      email: adminCredentialsForm.email,
+      currentPassword: adminCredentialsForm.currentPassword || undefined,
+      newPassword: adminCredentialsForm.newPassword || undefined,
+    });
+    if (res.error) {
+      showToast(res.error, "error");
+    } else {
+      showToast("Admin credentials updated successfully!");
+      setAdminCredentialsForm(prev => ({ ...prev, currentPassword: "", newPassword: "" }));
+      setData({
+        ...data,
+        adminEmail: adminCredentialsForm.email,
+      });
     }
   };
 
@@ -1477,6 +1508,52 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
 
                 <Button type="submit" className="rounded-full px-8 h-11 text-sm font-semibold">
                   Save All Changes
+                </Button>
+              </form>
+
+              <hr className="border-border" />
+              
+              <h2 className="font-semibold text-foreground">Admin Credentials</h2>
+              <form onSubmit={handleSaveAdminCredentials} className="space-y-6 pb-20">
+                <Card className="border-border bg-card text-foreground">
+                  <CardContent className="p-6 space-y-5">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Admin Email (Username)</label>
+                        <Input
+                          type="email"
+                          value={adminCredentialsForm.email}
+                          onChange={(e) => setAdminCredentialsForm({ ...adminCredentialsForm, email: e.target.value })}
+                          required
+                          className="h-11 border-border bg-background"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Current Password</label>
+                        <Input
+                          type="password"
+                          value={adminCredentialsForm.currentPassword}
+                          onChange={(e) => setAdminCredentialsForm({ ...adminCredentialsForm, currentPassword: e.target.value })}
+                          placeholder="Required to change password"
+                          className="h-11 border-border bg-background"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">New Password</label>
+                        <Input
+                          type="password"
+                          value={adminCredentialsForm.newPassword}
+                          onChange={(e) => setAdminCredentialsForm({ ...adminCredentialsForm, newPassword: e.target.value })}
+                          placeholder="Leave blank to keep current"
+                          className="h-11 border-border bg-background"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Button type="submit" className="rounded-full px-8 h-11 text-sm font-semibold">
+                  Update Credentials
                 </Button>
               </form>
             </motion.div>

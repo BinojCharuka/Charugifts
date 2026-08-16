@@ -102,10 +102,67 @@ export async function getDashboardData() {
         where: eq(promoCodes.tenantId, tenantId),
         orderBy: [desc(promoCodes.createdAt)],
       }),
+      adminEmail: session.email,
     };
   } catch (error) {
     console.error("Failed to load dashboard data:", error);
     throw new Error("Failed to load dashboard data.");
+  }
+}
+
+export async function updateAdminCredentials(data: { email: string; currentPassword?: string; newPassword?: string }) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  try {
+    const sellerRecord = await db.query.sellers.findFirst({
+      where: eq(sellers.id, session.sellerId),
+    });
+
+    if (!sellerRecord) {
+      return { error: "Admin account not found." };
+    }
+
+    if (data.email !== sellerRecord.email) {
+      const existing = await db.query.sellers.findFirst({
+        where: eq(sellers.email, data.email.toLowerCase().trim()),
+      });
+      if (existing && existing.id !== session.sellerId) {
+        return { error: "Email is already taken." };
+      }
+    }
+
+    const updates: Partial<{ email: string; passwordHash: string }> = {};
+    if (data.email !== sellerRecord.email) {
+      updates.email = data.email.toLowerCase().trim();
+    }
+
+    if (data.newPassword) {
+      if (!data.currentPassword) {
+        return { error: "Current password is required to set a new password." };
+      }
+      const hashedCurrent = hashPassword(data.currentPassword);
+      if (sellerRecord.passwordHash !== hashedCurrent) {
+        return { error: "Current password is incorrect." };
+      }
+      updates.passwordHash = hashPassword(data.newPassword);
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await db.update(sellers).set(updates).where(eq(sellers.id, session.sellerId));
+      if (updates.email) {
+        // update session with new email
+        await setSession({
+          ...session,
+          email: updates.email,
+        });
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update admin credentials:", error);
+    return { error: "Failed to update credentials" };
   }
 }
 
