@@ -27,6 +27,7 @@ import {
 } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Product {
   id: string;
@@ -479,6 +480,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               </div>
               <span className="hidden sm:inline">Bag</span>
             </button>
+            <ThemeToggle />
           </div>
         </div>
 
