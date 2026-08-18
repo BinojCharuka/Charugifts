@@ -16,19 +16,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     if (referenceCode) {
-      console.log(`Running OCR for reference code: ${referenceCode}`);
-      // Perform OCR
-      const { data: { text } } = await Tesseract.recognize(buffer, "eng");
-      console.log("OCR Extracted Text:", text);
-      
-      const normalizedText = text.replace(/[\s-]/g, "").toUpperCase();
-      const normalizedCode = referenceCode.replace(/[\s-]/g, "").toUpperCase();
-      
-      if (!normalizedText.includes(normalizedCode)) {
-        return NextResponse.json({ 
-          error: `Could not verify payment slip. Please make sure the remark "${referenceCode}" is clearly visible on the receipt.` 
-        }, { status: 400 });
-      }
+      console.log(`Reference code provided: ${referenceCode} (Skipping heavy OCR verification to speed up upload)`);
     }
 
     const result = await new Promise<any>((resolve, reject) => {
