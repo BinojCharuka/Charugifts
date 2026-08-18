@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { submitOrder } from "./actions";
+import { createWorker } from "tesseract.js";
 
 interface Product {
   id: string;
@@ -137,6 +138,8 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [receiptUrl, setReceiptUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ocrProgress, setOcrProgress] = useState<number>(0);
+  const [ocrStatus, setOcrStatus] = useState<string>("");
 
   // Form validation errors
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
@@ -156,11 +159,43 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("referenceCode", referenceCode);
+    setOcrStatus("Initializing...");
+    setOcrProgress(0);
+    setPromoError(""); // Reset any previous errors
 
     try {
+      // 1. Run Client-Side OCR
+      const worker = await createWorker("eng", 1, {
+        logger: (m) => {
+          if (m.status === "recognizing text") {
+            setOcrStatus("Analyzing receipt...");
+            setOcrProgress(Math.round(m.progress * 100));
+          } else if (m.status.includes("load")) {
+            setOcrStatus("Loading OCR engine...");
+          }
+        },
+      });
+
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      const normalizedText = text.replace(/[\s-]/g, "").toUpperCase();
+      const normalizedCode = referenceCode.replace(/[\s-]/g, "").toUpperCase();
+      
+      if (!normalizedText.includes(normalizedCode)) {
+        alert(`Could not verify payment slip. Please make sure the remark "${referenceCode}" is clearly visible on the receipt.`);
+        setUploading(false);
+        setOcrStatus("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      setOcrStatus("Verification successful! Uploading...");
+
+      // 2. Upload to Server
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -175,9 +210,11 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred while uploading the file.");
+      alert("An error occurred while verifying or uploading the file.");
     } finally {
       setUploading(false);
+      setOcrStatus("");
+      setOcrProgress(0);
     }
   };
 
@@ -567,9 +604,14 @@ export default function CheckoutClient({ tenant, product, promoCodes = [], initi
                     className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 hover:bg-card/40 transition-colors cursor-pointer bg-card/60 backdrop-blur-md"
                   >
                     {uploading ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Spinner size={28} className="mx-auto text-primary animate-spin" />
-                        <p className="text-sm font-medium">Uploading slip receipt...</p>
+                        <p className="text-sm font-medium">{ocrStatus || "Uploading slip receipt..."}</p>
+                        {ocrProgress > 0 && ocrProgress < 100 && (
+                          <div className="w-full max-w-[200px] mx-auto bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div className="bg-primary h-full transition-all duration-300" style={{ width: `${ocrProgress}%` }} />
+                          </div>
+                        )}
                       </div>
                     ) : uploadedFile ? (
                       <div className="space-y-2">
