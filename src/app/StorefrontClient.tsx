@@ -28,6 +28,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SplashScreen } from "@/components/SplashScreen";
 
 interface Product {
   id: string;
@@ -101,6 +102,17 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
     heroImageUrl: "https://picsum.photos/seed/gift-hero-premium/800/1000",
     ...( tenant.contentSettings ?? {} ),
   };
+
+  // App loading state
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading to show splash screen (useful for images and initial components)
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Cart state
   const [cart, setCart] = useState<{ product: Product; qty: number; note: string }[]>([]);
@@ -391,7 +403,14 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <>
+      <AnimatePresence>
+        {isAppLoading && (
+          <SplashScreen shopName={tenant.shopName} logoUrl={tenant.logoUrl} />
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* 1. UTILITY ANNOUNCEMENT BAR (Inspired by Petti.lk & Giftboxlanka.lk) */}
       <div className="w-full bg-[#1A1817] text-[#E7E5E4] py-2 px-6 border-b border-[#2C2927] text-xs font-sans tracking-wide z-50 relative">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
@@ -1124,14 +1143,14 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCartOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 cursor-pointer"
+              className="fixed inset-0 bg-black/60 z-50 cursor-pointer"
             />
             {/* Drawer */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              transition={{ ease: "easeOut", duration: 0.3 }}
               className="fixed inset-y-0 right-0 w-full max-w-md bg-card border-l border-border shadow-2xl z-50 flex flex-col"
             >
               <div className="px-6 py-5 border-b border-border flex items-center justify-between text-foreground">

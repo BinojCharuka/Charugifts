@@ -2040,6 +2040,24 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
           </div>
         )}
       </AnimatePresence>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border z-40 flex items-center justify-around px-2 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
+        {navItems.slice(0, 5).map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => {
+              setActiveTab(key);
+              if (key !== "orders") setSelectedOrder(null);
+            }}
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors
+              ${activeTab === key ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            <Icon size={20} weight={activeTab === key ? "fill" : "regular"} />
+            <span className="text-[10px] font-medium">{label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
