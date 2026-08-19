@@ -1151,12 +1151,12 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ ease: "easeOut", duration: 0.3 }}
-              className="fixed inset-y-0 right-0 w-full max-w-md bg-card border-l border-border shadow-2xl z-50 flex flex-col"
+              className="fixed inset-y-0 right-0 w-full sm:max-w-md bg-card border-l border-border shadow-2xl z-50 flex flex-col"
             >
-              <div className="px-6 py-5 border-b border-border flex items-center justify-between text-foreground">
+              <div className="px-4 py-4 sm:px-6 sm:py-5 border-b border-border flex items-center justify-between text-foreground">
                 <div className="flex items-center gap-2">
                   <ShoppingBag size={22} className="text-primary" />
-                  <h2 className="font-serif font-bold text-xl">Your Gift Bag</h2>
+                  <h2 className="font-serif font-bold text-lg sm:text-xl">Your Gift Bag</h2>
                 </div>
                 <button
                   onClick={() => setIsCartOpen(false)}
@@ -1167,7 +1167,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
               </div>
 
               {/* Cart List */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
                     <ShoppingBag size={48} className="text-muted-foreground opacity-50" />
@@ -1178,49 +1178,51 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
                   </div>
                 ) : (
                   cart.map((item) => (
-                    <div key={item.product.id} className="flex gap-4 border-b border-border pb-6 last:border-b-0">
-                      <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border">
+                    <div key={item.product.id} className="flex gap-3 sm:gap-4 border-b border-border pb-4 sm:pb-6 last:border-b-0">
+                      <div className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border">
                         {item.product.imageUrl ? (
                           <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground font-bold">No image</div>
+                          <div className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground font-bold text-center p-1">No image</div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0 space-y-2.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-serif font-bold text-base text-foreground truncate">{item.product.name}</h4>
-                          <span className="text-sm font-semibold text-primary">Rs. {(parseFloat(item.product.price) * item.qty).toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div className="space-y-1.5 sm:space-y-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-serif font-bold text-sm sm:text-base text-foreground leading-tight">{item.product.name}</h4>
+                            <span className="text-xs sm:text-sm font-semibold text-primary whitespace-nowrap">Rs. {(parseFloat(item.product.price) * item.qty).toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleUpdateQty(item.product.id, -1)}
+                                className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-border flex items-center justify-center hover:bg-muted text-foreground cursor-pointer"
+                              >
+                                <Minus size={10} />
+                              </button>
+                              <span className="text-xs font-bold w-4 text-center text-foreground">{item.qty}</span>
+                              <button
+                                onClick={() => handleUpdateQty(item.product.id, 1)}
+                                className="w-6 h-6 sm:w-7 sm:h-7 rounded border border-border flex items-center justify-center hover:bg-muted text-foreground cursor-pointer"
+                              >
+                                <Plus size={10} />
+                              </button>
+                            </div>
                             <button
-                              onClick={() => handleUpdateQty(item.product.id, -1)}
-                              className="w-6 h-6 rounded border border-border flex items-center justify-center hover:bg-muted text-foreground cursor-pointer"
+                              onClick={() => handleRemoveFromCart(item.product.id)}
+                              className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer p-1"
                             >
-                              <Minus size={10} />
-                            </button>
-                            <span className="text-xs font-bold w-4 text-center text-foreground">{item.qty}</span>
-                            <button
-                              onClick={() => handleUpdateQty(item.product.id, 1)}
-                              className="w-6 h-6 rounded border border-border flex items-center justify-center hover:bg-muted text-foreground cursor-pointer"
-                            >
-                              <Plus size={10} />
+                              <Trash size={16} />
                             </button>
                           </div>
-                          <button
-                            onClick={() => handleRemoveFromCart(item.product.id)}
-                            className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                          >
-                            <Trash size={14} />
-                          </button>
+                          <textarea
+                            placeholder="Add custom gift ribbon message or handwritten card note here..."
+                            value={item.note}
+                            onChange={(e) => handleUpdateNote(item.product.id, e.target.value)}
+                            rows={2}
+                            className="w-full text-[10px] sm:text-xs rounded-lg border border-border bg-background px-2.5 py-2 sm:px-3 sm:py-2 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary transition"
+                          />
                         </div>
-                        <textarea
-                          placeholder="Add custom gift ribbon message or handwritten card note here..."
-                          value={item.note}
-                          onChange={(e) => handleUpdateNote(item.product.id, e.target.value)}
-                          rows={2.5}
-                          className="w-full text-xs rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary transition"
-                        />
                       </div>
                     </div>
                   ))
@@ -1229,17 +1231,17 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
 
               {/* Cart Footer */}
               {cart.length > 0 && (
-                <div className="p-6 border-t border-border space-y-4 bg-muted/20">
+                <div className="p-4 sm:p-6 border-t border-border space-y-3 sm:space-y-4 bg-muted/20">
                   <div className="flex items-center justify-between text-foreground">
-                    <span className="text-sm font-bold text-muted-foreground">Total (excluding delivery)</span>
-                    <span className="text-xl font-bold text-primary">
+                    <span className="text-xs sm:text-sm font-bold text-muted-foreground">Total (exc. delivery)</span>
+                    <span className="text-lg sm:text-xl font-bold text-primary">
                       Rs. {cart.reduce((acc, item) => acc + parseFloat(item.product.price) * item.qty, 0).toLocaleString()}
                     </span>
                   </div>
                   <Link href={checkoutUrl()}>
-                    <Button className="w-full rounded-full h-12 font-bold bg-primary hover:bg-primary/95 text-white flex items-center justify-center gap-2 cursor-pointer mt-2 shadow-md">
+                    <Button className="w-full rounded-full h-10 sm:h-12 text-sm sm:text-base font-bold bg-primary hover:bg-primary/95 text-white flex items-center justify-center gap-2 cursor-pointer mt-1 sm:mt-2 shadow-md">
                       <ShoppingBag size={18} />
-                      Checkout (Bank Deposit)
+                      Checkout
                     </Button>
                   </Link>
                 </div>
