@@ -458,13 +458,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
 
           {/* User actions */}
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleStartQuiz}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/15 transition px-4 py-2 rounded-full cursor-pointer border border-primary/20"
-            >
-              <Sparkle size={14} weight="fill" />
-              Gift Finder
-            </button>
+
 
             <button
               onClick={() => setIsCartOpen(true)}
@@ -484,36 +478,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
           </div>
         </div>
 
-        {/* Lower Row: Category Quick links */}
-        <div className="border-t border-border/60 bg-muted/20">
-          <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
-            <div className="flex items-center gap-6 overflow-x-auto text-xs font-semibold text-muted-foreground uppercase tracking-wider py-1.5 no-scrollbar">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`hover:text-primary transition-colors py-1 relative cursor-pointer ${
-                    selectedCategory === cat.id ? "text-primary font-bold" : ""
-                  }`}
-                >
-                  {cat.label}
-                  {selectedCategory === cat.id && (
-                    <motion.div
-                      layoutId="navUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="hidden sm:flex items-center gap-4 text-xs font-bold text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {c.nextDayDeliveryText}
-              </span>
-            </div>
-          </div>
-        </div>
+
       </header>
 
       {/* Background Ambient Blobs */}
@@ -587,15 +552,7 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
                     <ShoppingBag size={18} />
                     {slidesList[currentSlide].buttonText}
                   </Button>
-                  <Button 
-                    onClick={handleStartQuiz} 
-                    variant="ghost" 
-                    size="lg" 
-                    className="rounded-full px-6 h-12 text-sm group text-foreground font-bold hover:bg-muted/80"
-                  >
-                    Try Gift Finder
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+
                 </div>
               </div>
 

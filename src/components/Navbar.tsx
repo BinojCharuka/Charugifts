@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ShoppingBag, Phone, MapPin, Gift, List } from "@phosphor-icons/react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
   shopName?: string;
@@ -73,6 +74,7 @@ export default function Navbar({ shopName = "LuminaGifts", cartCount = 0, logoUr
               <ShoppingBag size={18} weight="regular" />
               <span className="font-semibold">({cartCount})</span>
             </button>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
