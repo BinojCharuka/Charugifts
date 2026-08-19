@@ -779,24 +779,24 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
       <div className="flex-1 md:ml-64 pb-16 md:pb-0">
 
         {/* Top Bar */}
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-30">
-          <h1 className="text-base font-semibold capitalize">
+        <header className="h-14 sm:h-16 border-b border-border bg-card flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30">
+          <h1 className="text-sm sm:text-base font-bold capitalize text-foreground">
             {activeTab === "overview" ? "Dashboard" : activeTab}
           </h1>
-          <div className="flex items-center gap-3">
-            <div className="relative hidden sm:block">
-              <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative">
+              <MagnifyingGlass size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search orders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8 w-56 text-sm border-border bg-background text-foreground"
+                className="pl-8 h-8 w-32 sm:w-56 text-xs sm:text-sm border-border bg-background text-foreground rounded-full"
               />
             </div>
           </div>
         </header>
 
-        <main className="p-8 space-y-8">
+        <main className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-8">
           {/* Low Stock Alerts */}
           {lowStockProducts.length > 0 && (
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 text-amber-800 dark:text-amber-200 flex items-start gap-4 shadow-sm">
@@ -828,22 +828,50 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
 
           {/* OVERVIEW */}
           {activeTab === "overview" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 sm:space-y-8">
+              {/* Stat Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
                 {statsList.map((s, i) => (
                   <Card key={i} className="border-border bg-card">
-                    <CardContent className="p-5">
-                      <div className={`mb-3 ${s.color}`}><s.icon size={22} /></div>
-                      <p className="text-3xl font-bold text-foreground">{s.value}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
+                    <CardContent className="p-4 sm:p-5">
+                      <div className={`mb-2 sm:mb-3 ${s.color}`}><s.icon size={20} /></div>
+                      <p className="text-2xl sm:text-3xl font-bold text-foreground">{s.value}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">{s.label}</p>
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
+              {/* Recent Orders — card list on mobile, table on desktop */}
               <div>
-                <h2 className="font-semibold mb-4 text-foreground">Recent Orders</h2>
-                <Card className="border-border bg-card">
+                <h2 className="font-semibold mb-3 sm:mb-4 text-foreground">Recent Orders</h2>
+
+                {/* Mobile card list */}
+                <div className="sm:hidden space-y-2">
+                  {data.orders.slice(0, 5).map((o) => (
+                    <div
+                      key={o.id}
+                      onClick={() => selectOrder(o)}
+                      className="bg-card border border-border rounded-xl p-4 cursor-pointer active:bg-muted transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
+                        {paymentBadge(o.paymentStatus)}
+                      </div>
+                      <p className="font-semibold text-sm text-foreground">{o.customerName}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-muted-foreground font-semibold uppercase">{o.orderStatus}</span>
+                        <span className="text-sm font-bold text-foreground">Rs. {parseFloat(o.totalAmount).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {data.orders.length === 0 && (
+                    <p className="text-center py-8 text-muted-foreground text-sm">No orders yet.</p>
+                  )}
+                </div>
+
+                {/* Desktop table */}
+                <Card className="border-border bg-card hidden sm:block">
                   <CardContent className="p-0">
                     <table className="w-full text-sm">
                       <thead className="border-b border-border">
@@ -871,9 +899,7 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
                         ))}
                         {data.orders.length === 0 && (
                           <tr>
-                            <td colSpan={5} className="text-center py-10 text-muted-foreground">
-                              No orders found.
-                            </td>
+                            <td colSpan={5} className="text-center py-10 text-muted-foreground">No orders found.</td>
                           </tr>
                         )}
                       </tbody>
@@ -990,7 +1016,34 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
                     <h2 className="font-semibold text-foreground">All Orders</h2>
                     <span className="text-sm text-muted-foreground">{filteredOrders.length} orders</span>
                   </div>
-                  <Card className="border-border bg-card">
+
+                  {/* Mobile: card list */}
+                  <div className="sm:hidden space-y-2">
+                    {filteredOrders.map((o) => (
+                      <div
+                        key={o.id}
+                        onClick={() => selectOrder(o)}
+                        className="bg-card border border-border rounded-xl p-4 cursor-pointer active:bg-muted/60 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <span className="font-mono text-xs font-bold text-primary">{o.id}</span>
+                          {paymentBadge(o.paymentStatus)}
+                        </div>
+                        <p className="font-semibold text-sm text-foreground">{o.customerName}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{o.customerPhone}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground font-bold uppercase bg-muted px-2 py-0.5 rounded-full">{o.orderStatus}</span>
+                          <span className="text-sm font-bold text-foreground">Rs. {parseFloat(o.totalAmount).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredOrders.length === 0 && (
+                      <p className="text-center py-10 text-muted-foreground text-sm">No orders match search.</p>
+                    )}
+                  </div>
+
+                  {/* Desktop: table */}
+                  <Card className="border-border bg-card hidden sm:block">
                     <CardContent className="p-0">
                       <table className="w-full text-sm">
                         <thead className="border-b border-border">
@@ -1039,26 +1092,26 @@ export default function AdminDashboardClient({ initialData }: DashboardClientPro
 
           {/* INVENTORY */}
           {activeTab === "inventory" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div className="flex items-center justify-between gap-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 sm:space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-semibold text-foreground">Products</h2>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <div className="relative">
                     <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder="Search products..."
                       value={inventorySearch}
                       onChange={(e) => setInventorySearch(e.target.value)}
-                      className="pl-8 h-8 w-44 text-xs border-border bg-background text-foreground"
+                      className="pl-8 h-8 w-36 sm:w-44 text-xs border-border bg-background text-foreground rounded-full"
                     />
                   </div>
-                  <Button onClick={handleOpenAddProduct} size="sm" className="rounded-full gap-2 h-10 px-4">
+                  <Button onClick={handleOpenAddProduct} size="sm" className="rounded-full gap-1.5 h-8 px-3 text-xs">
                     <Plus size={14} />
                     Add Product
                   </Button>
                 </div>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredProducts.map((p) => (
                   <Card key={p.id} className="border-border bg-card overflow-hidden group">
                     <div className="relative aspect-[4/3] bg-muted">
