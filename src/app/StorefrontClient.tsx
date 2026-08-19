@@ -1475,5 +1475,6 @@ export default function StorefrontClient({ tenant, products }: StorefrontClientP
         )}
       </AnimatePresence>
     </div>
+    </>
   );
 }
